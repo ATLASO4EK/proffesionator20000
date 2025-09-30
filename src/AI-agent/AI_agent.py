@@ -1,12 +1,18 @@
-from diffusers import StableDiffusionPipeline
-import torch
+from config import get_key
+from huggingface_hub import InferenceClient
 
 class AIagent():
     def __init__(self):
-        self.model_id = "prompthero/openjourney"
-        self.pipe = StableDiffusionPipeline.from_pretrained(self.model_id, torch_dtype=torch.float16)
-        self.base_prompt = "retro se.rie of different cars with different colors and shapes, mdjrny-v4 style"
+        self.model = "Qwen/Qwen-Image-Edit"
+        self.client = InferenceClient(
+            provider="fal-ai",
+            api_key=get_key(),
+        )
 
-    def getimg(self, prompt:str, image=None):
-        image = self.pipe(self.base_prompt + prompt).images[0]
-        return image
+    def getimg(self, prof:str, prof_disc:str, image):
+        out_image = self.client.image_to_image(
+            image,
+            prompt=f"Изобрази как этот человек бы выглядел, если бы его профессия была {prof}, вот немного сведений о ней: {prof_disc}",
+            model=self.model,
+        )
+        return out_image
