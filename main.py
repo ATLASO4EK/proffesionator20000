@@ -7,14 +7,15 @@ from PyQt6.QtWidgets import (
     QMainWindow, QApplication,
     QLabel, QCheckBox, QComboBox, QLineEdit,
     QListWidget, QVBoxLayout, QWidget, QPushButton,
-    QFileDialog, QMessageBox
-)
-
+    QFileDialog, QMessageBox)
+from AI_agent import AIagent
+from PIL import Image
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.ai = AIagent()
         self.setWindowTitle("Тест НКЭиВТ")
         self.setFixedSize(800, 600)
 
@@ -147,6 +148,13 @@ class MainWindow(QMainWindow):
             "text": self.texito.text(),
             "path": self.selected_photo
         }
+
+        predicted_img = self.ai.getimg(prof=self.spisok.currentText(),
+                                       prof_disc='интересная профессия, связанная с айти технологиями',
+                                       image=open(self.selected_photo, 'rb').read())
+
+        predicted_img.show()
+        predicted_img.save('123.png')
 
         with open("data.json", "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
