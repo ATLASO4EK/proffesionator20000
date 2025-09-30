@@ -1,45 +1,47 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton
-
-from random import choice
-window_titles = [
-    'My App',
-    'My App',
-    'Still My App',
-    'Srill My App',
-    'What on earth',
-    'What on earth',
-    'This is surprising',
-    'This is surprising',
-    'Something went wrong'
-]
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (
+    QMainWindow, QApplication,
+    QLabel, QCheckBox, QComboBox, QLineEdit,
+    QLineEdit, QSpinBox, QDoubleSpinBox, QSlider
+)
+from PyQt6.QtCore import Qt
 
 class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
+        super(MainWindow, self).__init__() 
+        
+        self.setWindowTitle("Тест НКЭиВТ") # тут название сайта
 
-        self.n_times_cliched = 0
+        widget = QLabel("Тест: Твоя будущая профессия") # тут главный текст
+        font = widget.font()
+        font.setPointSize(30)
+        widget.setFont(font)
+        widget.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        
 
-        self.setWindowTitle("My App")
+        self.setCentralWidget(widget)
+    
 
-        self.button = QPushButton("Press Me!")
-        self.button.clicked.connect(self.the_button_was_clicked)
-        self.button.clicked.connect(self.the_button_was_clicked)
+    
+        boxis = QCheckBox()# тут 
+        boxis.setCheckState(Qt.CheckState.Checked)
+        boxis.stateChanged.connect(self.show_state)
+    
+        
+        self.setCentralWidget(boxis)
+        
 
-        self.setCentralWidget(self.button)
+    def show_state(self, s):
+        print(s == Qt.CheckState.Checked)
+        print(s)
+    
 
-    def the_button_was_clicked(self):
-        print("Chicken")
-        new_window_title = choice(window_titles)
-        print("Setting title: %s" % new_window_title)
-        self.setWindowTitle(new_window_title)
-
-    def the_window_title_changed(self, window_title):
-        print("Window title_changed: %s" % window_title)
-
-        if window_title == 'Something went wrong':
-            self.button.setDisabled(True)
 app = QApplication(sys.argv)
+
+boxis = MainWindow()
+boxis.show()
+
 window = MainWindow()
 window.show()
 app.exec()
