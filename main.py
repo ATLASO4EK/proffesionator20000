@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QMainWindow, QApplication,
     QLabel, QCheckBox, QComboBox, QLineEdit,
-    QLineEdit, QSpinBox, QDoubleSpinBox, QSlider, QListWidget, QVBoxLayout, QHBoxLayout
+    QLineEdit, QSpinBox, QDoubleSpinBox, QSlider, QListWidget, QVBoxLayout, QHBoxLayout, QWidget
 )
 from PyQt6.QtCore import Qt
 
@@ -12,6 +12,11 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__() 
         
         self.setWindowTitle("Тест НКЭиВТ") # тут название сайта
+
+        # Создаем центральный виджет
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        layout = QVBoxLayout(central_widget)
 
         widget = QLabel("Тест: Твоя будущая профессия") # тут главный текст
         font = widget.font()
@@ -22,6 +27,7 @@ class MainWindow(QMainWindow):
         podzagalovok = QLabel("Маленький текст")
         podzagalovok_font = podzagalovok.font()
         podzagalovok_font.setPointSize(23)
+        podzagalovok.setFont(podzagalovok_font)
         podzagalovok.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         vopros_1_label = QLabel("1. Тебе нравится бла-бла-бла")
@@ -36,32 +42,65 @@ class MainWindow(QMainWindow):
         vopros_1_3 = QCheckBox("8/10")
         vopros_1_3.stateChanged.connect(self.vopros_1_chaged_3)
 
-        spisok = QComboBox("На сколько вы готовы")
+        spisok = QComboBox()
         spisok.addItems(["1", "2", "3"])
         spisok.currentIndexChanged.connect(self.index_xhanged)
-        spisok.editTextChanged.connect(self.text_xhanged)
+        spisok.currentTextChanged.connect(self.text_xhanged)
 
-        neskolko = QListWidget("дада выбирай скока хочешь")
+        neskolko = QListWidget()
         neskolko.addItems(["One", "Two", "Three"])
         neskolko.currentItemChanged.connect(self.index_changed)
         neskolko.currentTextChanged.connect(self.text_changed)
 
-        texito = QLineEdit("Введите текс")
+        texito = QLineEdit()
         texito.setMaxLength(10)
-        texito.setPlaceholderText("Enter your text")
+        texito.setPlaceholderText("Введите текс")
         texito.returnPressed.connect(self.return_pressed)
         texito.selectionChanged.connect(self.selection_changed)
-        texito.textChanged.connect(self.text_changed)
+        texito.textChanged.connect(self.text_changed_line)
         texito.textEdited.connect(self.text_edited)
+
+        # Добавляем все виджеты в layout
+        layout.addWidget(widget)
+        layout.addWidget(podzagalovok)
+        layout.addWidget(vopros_1_label)
+        layout.addWidget(vopros_1_1)
+        layout.addWidget(vopros_1_2)
+        layout.addWidget(vopros_1_3)
+        layout.addWidget(spisok)
+        layout.addWidget(neskolko)
+        layout.addWidget(texito)
+
+    def vopros_1_chaged_1(self, state):
+        self.show_state(state)
+
+    def vopros_1_chaged_2(self, state):
+        self.show_state(state)
+
+    def vopros_1_chaged_3(self, state):
+        self.show_state(state)
+
+    def index_xhanged(self, i):
+        print(i)
+
+    def text_xhanged(self, s):
+        print(s)
+
+    def index_changed(self, current, previous):
+        print(current.text())
+
+    def text_changed(self, s):
+        print(s)
+
     def return_pressed(self):
         print("Return pressed!")
-        self.centralWidget().setText("BOOM!")
+        self.centralWidget().findChild(QLineEdit).setText("BOOM!")
 
     def selection_changed(self):
         print("Selection changed")
-        print(self.centralWidget().selectedText())
+        print(self.centralWidget().findChild(QLineEdit).selectedText())
 
-    def text_changed(self, s):
+    def text_changed_line(self, s):
         print("Text changed...")
         print(s)
 
@@ -69,22 +108,14 @@ class MainWindow(QMainWindow):
         print("Text edited...")
         print(s) 
 
-        layout.addWidget(widget)
-
-    
-        
-        
-
     def show_state(self, s):
-        print(s == Qt.CheckState.Checked)
+        print(s == Qt.CheckState.Checked.value)
         print(s)
     
 
 app = QApplication(sys.argv)
 
-boxis = MainWindow()
-boxis.show()
-
 window = MainWindow()
 window.show()
+
 app.exec()
