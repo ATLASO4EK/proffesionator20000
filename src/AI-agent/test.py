@@ -1,18 +1,29 @@
-from huggingface_hub import InferenceClient
+import os
+from PIL import Image
+import torch
 
-client = InferenceClient(
-    provider="fal-ai",
-    api_key="",
-)
+from diffusers import QwenImageEditPipeline
 
-with open("retro_cars.png", "rb") as image_file:
-   input_image = image_file.read()
+pipeline = QwenImageEditPipeline.from_pretrained("Qwen/Qwen-Image-Edit", cache_dir='D:\pythonic-shit\proffesionator20000\src\AI-agent\QWEN')
+print("pipeline loaded")
+pipeline.to(torch.bfloat16)
+pipeline.to("cuda")
+pipeline.set_progress_bar_config(disable=None)
+image = Image.open("retro_cars.png").convert("RGB")
+prompt = "Change the car color to purple"
+inputs = {
+    "image": image,
+    "prompt": prompt,
+    "generator": torch.manual_seed(0),
+    "true_cfg_scale": 4.0,
+    "negative_prompt": " ",
+    "num_inference_steps": 50,
+}
 
-# output is a PIL.Image object
-image = client.image_to_image(
-    input_image,
-    prompt="Поверни все машины левым боком",
-    model="Qwen/Qwen-Image-Edit",
-)
+with torch.inference_mode():
+    output = pipeline(**inputs)
+    output_image = output.images[0]
+    output_image.save("output_image_edit.png")
+    print("image saved at", os.path.abspath("output_image_edit.png"))
 
 print('a')
