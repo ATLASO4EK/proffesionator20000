@@ -1,29 +1,35 @@
 import sys
+import json
+import os
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (
     QMainWindow, QApplication,
     QLabel, QCheckBox, QComboBox, QLineEdit,
-    QLineEdit, QSpinBox, QDoubleSpinBox, QSlider, QListWidget, QVBoxLayout, QHBoxLayout, QWidget
+    QListWidget, QVBoxLayout, QWidget, QPushButton,
+    QFileDialog, QMessageBox
 )
-from PyQt6.QtCore import Qt
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
-        super(MainWindow, self).__init__() 
-        
-        self.setWindowTitle("Тест НКЭиВТ") # тут название сайта
+        super().__init__()
 
-        # Создаем центральный виджет
+        self.setWindowTitle("Тест НКЭиВТ")
+        self.setFixedSize(800, 600)
+
+        # Центральный виджет
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
-        widget = QLabel("Тест: Твоя будущая профессия") # тут главный текст
+        # Заголовок
+        widget = QLabel("Тест: Твоя будущая профессия")
         font = widget.font()
         font.setPointSize(30)
         widget.setFont(font)
         widget.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        
+
         podzagalovok = QLabel("Маленький текст")
         podzagalovok_font = podzagalovok.font()
         podzagalovok_font.setPointSize(23)
@@ -34,88 +40,143 @@ class MainWindow(QMainWindow):
         vopros_1_font = vopros_1_label.font()
         vopros_1_font.setPointSize(16)
         vopros_1_label.setFont(vopros_1_font)
-    
-        vopros_1_1 = QCheckBox("10/10")
-        vopros_1_1.stateChanged.connect(self.vopros_1_chaged_1)
-        vopros_1_2 = QCheckBox("9/10")
-        vopros_1_2.stateChanged.connect(self.vopros_1_chaged_2)
-        vopros_1_3 = QCheckBox("8/10")
-        vopros_1_3.stateChanged.connect(self.vopros_1_chaged_3)
 
-        spisok = QComboBox()
-        spisok.addItems(["1", "2", "3"])
-        spisok.currentIndexChanged.connect(self.index_xhanged)
-        spisok.currentTextChanged.connect(self.text_xhanged)
+        # Чекбоксы
+        self.vopros_1_1 = QCheckBox("котяки")
+        self.vopros_1_2 = QCheckBox("рыбики")
 
-        neskolko = QListWidget()
-        neskolko.addItems(["One", "Two", "Three"])
-        neskolko.currentItemChanged.connect(self.index_changed)
-        neskolko.currentTextChanged.connect(self.text_changed)
+        vopros_2_label = QLabel("2. Твоя специальность чтобы тебя отчислить")
+        vopros_2_font = vopros_1_label.font()
+        vopros_2_font.setPointSize(16)
+        vopros_2_label.setFont(vopros_1_font)
 
-        texito = QLineEdit()
-        texito.setMaxLength(10)
-        texito.setPlaceholderText("Введите текс")
-        texito.returnPressed.connect(self.return_pressed)
-        texito.selectionChanged.connect(self.selection_changed)
-        texito.textChanged.connect(self.text_changed_line)
-        texito.textEdited.connect(self.text_edited)
+        # Комбо-бокс
+        self.spisok = QComboBox()
+        self.spisok.addItems(["Информационные системы и программирование",
+                              "Оператор информационных систем и ресурсов",
+                              "Сетевое и системное администрирование",
+                              "Компьютерные системы и комплексы",
+                              "Монтаж, техническое обслуживание и ремонт электронных приборов и устройств",])
 
-        # Добавляем все виджеты в layout
+        vopros_3_label = QLabel("3. Какащке?")
+        vopros_3_font = vopros_1_label.font()
+        vopros_3_font.setPointSize(16)
+        vopros_3_label.setFont(vopros_1_font)
+
+        # Листбокс
+        self.neskolko = QListWidget()
+        self.neskolko.addItems(["yes", "da", "Ещё как!","да без б"])
+
+        vopros_4_label = QLabel("4. Последние слова")
+        vopros_4_font = vopros_1_label.font()
+        vopros_4_font.setPointSize(16)
+        vopros_4_label.setFont(vopros_1_font)
+
+        # Поле ввода
+        self.texito = QLineEdit()
+        self.texito.setMaxLength(10)
+        self.texito.setPlaceholderText("Введите текст")
+
+        # Загрузка фото
+        self.photo_label = QLabel("Фото не выбрано")
+        self.photo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.photo_button = QPushButton("Загрузить фото")
+        self.photo_button.clicked.connect(self.load_photo)
+
         layout.addWidget(widget)
         layout.addWidget(podzagalovok)
         layout.addWidget(vopros_1_label)
-        layout.addWidget(vopros_1_1)
-        layout.addWidget(vopros_1_2)
-        layout.addWidget(vopros_1_3)
-        layout.addWidget(spisok)
-        layout.addWidget(neskolko)
-        layout.addWidget(texito)
+        layout.addWidget(self.vopros_1_1)
+        layout.addWidget(self.vopros_1_2)
+        layout.addWidget(vopros_2_label)
+        layout.addWidget(self.spisok)
+        layout.addWidget(vopros_3_label)
+        layout.addWidget(self.neskolko)
+        layout.addWidget(vopros_4_label)
+        layout.addWidget(self.texito)
+        layout.addWidget(self.photo_button)
+        layout.addWidget(self.photo_label)
 
-    def vopros_1_chaged_1(self, state):
-        self.show_state(state)
+        # Кнопка сохранения JSON
+        self.save_button = QPushButton("Сохранить в JSON")
+        self.save_button.setStyleSheet("background-color: blue; color: white; font-size: 16px; padding: 8px;")
+        self.save_button.clicked.connect(self.save_to_json)
+        #self.save_button.clicked.connect(lambda: self.show_image_from_json("data.json"))
+        layout.addWidget(self.save_button)
 
-    def vopros_1_chaged_2(self, state):
-        self.show_state(state)
+    # Метод загрузки фотоs
+    def load_photo(self):
+        file_name, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выбрать фото",
+            "",
+            "Images (*.png *.jpg *.jpeg *.bmp *.gif)"
+        )
+        if file_name:
+            pixmap = QPixmap(file_name).scaledToWidth(200)
+            self.photo_label.setPixmap(pixmap)
+            self.photo_label.setText("")
+            self.selected_photo = file_name
 
-    def vopros_1_chaged_3(self, state):
-        self.show_state(state)
+    # Метод сохранения JSON
+    def save_to_json(self):
+        if not (self.vopros_1_1.isChecked() or self.vopros_1_2.isChecked()):
+            QMessageBox.warning(self, "Ошибка", "Ответь на вопрос 1!")
+            return
+        if self.spisok.currentText().strip() == "":
+            QMessageBox.warning(self, "Ошибка", "Выбери вариант из списка!")
+            return
+        if not self.neskolko.currentItem():
+            QMessageBox.warning(self, "Ошибка", "Выбери элемент из списка!")
+            return
+        if self.texito.text().strip() == "":
+            QMessageBox.warning(self, "Ошибка", "Поле ввода текста не должно быть пустым!")
+            return
+        if not hasattr(self, "selected_photo"):
+            QMessageBox.warning(self, "Ошибка", "Загрузите фото!")
+            return
 
-    def index_xhanged(self, i):
-        print(i)
+        data = {
+            "q_one": {
+                "ans_one": self.vopros_1_1.isChecked(),
+                "ans_two": self.vopros_1_2.isChecked(),
+            },
+            "q_two": self.spisok.currentText(),
+            "q_three": self.neskolko.currentItem().text(), #забей на ошибку, так надо
+            "text": self.texito.text(),
+            "path": self.selected_photo
+        }
 
-    def text_xhanged(self, s):
-        print(s)
+        with open("data.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
 
-    def index_changed(self, current, previous):
-        print(current.text())
+        QMessageBox.information(self, "Успех", "✅ Данные сохранены в data.json")
+        self.show_image_from_json("data.json")
 
-    def text_changed(self, s):
-        print(s)
+    # Метод показа фото из JSON
+    def show_image_from_json(self, json_path):
+        if not os.path.exists(json_path):
+            QMessageBox.warning(self, "Ошибка", "JSON файл не найден!")
+            return
 
-    def return_pressed(self):
-        print("Return pressed!")
-        self.centralWidget().findChild(QLineEdit).setText("BOOM!")
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
 
-    def selection_changed(self):
-        print("Selection changed")
-        print(self.centralWidget().findChild(QLineEdit).selectedText())
+        photo_path = data.get("path")
+        if photo_path and os.path.exists(photo_path):
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Ваше фото")
+            msg.setText("Вот загруженная картинка:")
+            pixmap = QPixmap(photo_path).scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio)
+            msg.setIconPixmap(pixmap)
+            msg.exec()
+        else:
+            QMessageBox.warning(self, "Ошибка", "Фото не найдено!")
 
-    def text_changed_line(self, s):
-        print("Text changed...")
-        print(s)
 
-    def text_edited(self, s):
-        print("Text edited...")
-        print(s) 
-
-    def show_state(self, s):
-        print(s == Qt.CheckState.Checked.value)
-        print(s)
-    
-
-app = QApplication(sys.argv)
-
-window = MainWindow()
-window.show()
-
-app.exec()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    app.exec()
