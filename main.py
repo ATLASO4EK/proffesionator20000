@@ -167,8 +167,7 @@ class MainWindow(QMainWindow):
         if photo_path and os.path.exists(photo_path):
             msg = QMessageBox(self)
             msg.setWindowTitle("Ваше фото")
-            msg.setText("Вот загруженная картинка:")
-            pixmap = QPixmap(photo_path).scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio)
+            pixmap = QPixmap(photo_path).scaled(800, 600, Qt.AspectRatioMode.KeepAspectRatio)
             msg.setIconPixmap(pixmap)
             msg.exec()
         else:
